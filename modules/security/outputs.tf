@@ -16,10 +16,5 @@ output "cognito_client_id" {
 
 output "lambda_role_arn" {
   description = "ARN of the Lambda IAM Role"
-  value       = aws_iam_role.lambda_role.arn
-}
-
-output "lambda_role_name" {
-  description = "Name of the Lambda IAM Role"
-  value       = aws_iam_role.lambda_role.name
+  value       = var.aws_iam_role
 }
