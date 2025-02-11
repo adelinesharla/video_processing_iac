@@ -36,19 +36,13 @@ module "messaging" {
   environment  = var.environment
 }
 
-# Security Module (Cognito and IAM)
+# Security Module (Cognito)
 module "security" {
   source = "./modules/security"
 
   project_name = var.project_name
   environment  = var.environment
-
-  # Pass resource ARNs for IAM policies
-  input_bucket_arn   = module.storage.input_bucket_arn
-  output_bucket_arn  = module.storage.output_bucket_arn
-  dynamodb_table_arn = module.storage.dynamodb_table_arn
-  sqs_queue_arn      = module.messaging.sqs_queue_arn
-  sns_topic_arn      = module.messaging.sns_topic_arn
+  aws_iam_role = var.aws_iam_role
 }
 
 # Compute Module (Lambda Functions)
@@ -65,7 +59,7 @@ module "compute" {
   sqs_queue_url   = module.messaging.sqs_queue_url
   sns_topic_arn   = module.messaging.sns_topic_arn
   dynamodb_table  = module.storage.dynamodb_table_name
-  lambda_role_arn = module.security.lambda_role_arn
+  lambda_role_arn = var.aws_iam_role
 
   depends_on = [
     module.storage,
