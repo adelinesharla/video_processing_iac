@@ -1,23 +1,3 @@
-variable "project_name" {
-  description = "Project name"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment name"
-  type        = string
-}
-
-variable "cognito_user_pool" {
-  description = "Cognito User Pool ID"
-  type        = string
-}
-
-variable "upload_lambda_arn" {
-  description = "Upload Lambda function ARN"
-  type        = string
-}
-
 # API Gateway
 resource "aws_api_gateway_rest_api" "main" {
   name = "${var.project_name}-api"
@@ -43,8 +23,4 @@ resource "aws_api_gateway_integration" "upload" {
   http_method = aws_api_gateway_method.upload.http_method
   type        = "AWS_PROXY"
   uri         = aws_lambda_function.upload_handler.invoke_arn
-}
-
-output "api_endpoint" {
-  value = aws_api_gateway_rest_api.main.execution_arn
 }
