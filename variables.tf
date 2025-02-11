@@ -22,5 +22,5 @@ variable "lambda_bucket" {
 variable "aws_iam_role" {
   description = "ARN of the existing IAM role to use"
   type        = string
-  default     = "arn:aws:iam::717145188069:role/LabRole"
+  default     = "arn:aws:iam::738118156289:role/LabRole"
 }
