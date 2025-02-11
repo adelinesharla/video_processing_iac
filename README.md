@@ -2,6 +2,10 @@
 
 Este projeto contém a configuração Terraform para provisionar uma arquitetura serverless de processamento de vídeos na AWS.
 
+## Arquitetura do Projeto
+
+![Arquitetura](arch-docs/out/c1/context.png)
+
 ## Pré-requisitos
 
 - Terraform v1.0+
