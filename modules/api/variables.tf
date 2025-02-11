@@ -17,3 +17,8 @@ variable "upload_lambda_arn" {
   description = "ARN of the upload handler Lambda function"
   type        = string
 }
+
+variable "aws_region" {
+  description = "AWS region where resources will be created"
+  type        = string
+  default     = "us-east-1"
