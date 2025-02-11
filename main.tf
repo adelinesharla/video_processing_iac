@@ -41,9 +41,9 @@ module "messaging" {
 module "security" {
   source = "./modules/security"
 
-  project_name      = var.project_name
-  environment       = var.environment
-  
+  project_name = var.project_name
+  environment  = var.environment
+
   # Pass resource ARNs for IAM policies
   input_bucket_arn   = module.storage.input_bucket_arn
   output_bucket_arn  = module.storage.output_bucket_arn
@@ -56,9 +56,9 @@ module "security" {
 module "compute" {
   source = "./modules/compute"
 
-  project_name    = var.project_name
-  environment     = var.environment
-  lambda_bucket   = var.lambda_bucket
+  project_name  = var.project_name
+  environment   = var.environment
+  lambda_bucket = var.lambda_bucket
 
   # Pass resource information from other modules
   input_bucket    = module.storage.input_bucket_id
