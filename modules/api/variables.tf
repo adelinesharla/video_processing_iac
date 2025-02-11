@@ -8,12 +8,12 @@ variable "environment" {
   type        = string
 }
 
-variable "cognito_user_pool" {
-  description = "Cognito User Pool ID"
+variable "cognito_user_pool_arn" {
+  description = "ARN of the Cognito User Pool"
   type        = string
 }
 
 variable "upload_lambda_arn" {
-  description = "Upload Lambda function ARN"
+  description = "ARN of the upload handler Lambda function"
   type        = string
 }
