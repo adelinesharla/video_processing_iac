@@ -1,39 +1,3 @@
-# Variables
-variable "project_name" {
-  description = "Project name"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment name"
-  type        = string
-}
-
-variable "input_bucket_arn" {
-  description = "Input S3 bucket ARN"
-  type        = string
-}
-
-variable "output_bucket_arn" {
-  description = "Output S3 bucket ARN"
-  type        = string
-}
-
-variable "dynamodb_table_arn" {
-  description = "DynamoDB table ARN"
-  type        = string
-}
-
-variable "sqs_queue_arn" {
-  description = "SQS queue ARN"
-  type        = string
-}
-
-variable "sns_topic_arn" {
-  description = "SNS topic ARN"
-  type        = string
-}
-
 # Cognito User Pool
 resource "aws_cognito_user_pool" "main" {
   name = "${var.project_name}-user-pool-${var.environment}"
@@ -152,30 +116,4 @@ resource "aws_iam_role_policy" "lambda_policy" {
       }
     ]
   })
-}
-
-# Outputs
-output "cognito_user_pool_id" {
-  description = "ID of the Cognito User Pool"
-  value       = aws_cognito_user_pool.main.id
-}
-
-output "cognito_user_pool_arn" {
-  description = "ARN of the Cognito User Pool"
-  value       = aws_cognito_user_pool.main.arn
-}
-
-output "cognito_client_id" {
-  description = "ID of the Cognito User Pool Client"
-  value       = aws_cognito_user_pool_client.main.id
-}
-
-output "lambda_role_arn" {
-  description = "ARN of the Lambda IAM Role"
-  value       = aws_iam_role.lambda_role.arn
-}
-
-output "lambda_role_name" {
-  description = "Name of the Lambda IAM Role"
-  value       = aws_iam_role.lambda_role.name
 }
