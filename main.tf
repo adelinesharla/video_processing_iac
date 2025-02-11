@@ -78,10 +78,10 @@ module "compute" {
 module "api" {
   source = "./modules/api"
 
-  project_name      = var.project_name
-  environment       = var.environment
-  cognito_user_pool = module.security.cognito_user_pool_id
-  upload_lambda_arn = module.compute.upload_lambda_arn
+  project_name          = var.project_name
+  environment           = var.environment
+  cognito_user_pool_arn = module.security.cognito_user_pool_arn
+  upload_lambda_arn     = module.compute.upload_lambda_arn
 
   depends_on = [
     module.security,
