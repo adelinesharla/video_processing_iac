@@ -42,26 +42,6 @@ resource "aws_api_gateway_integration" "upload" {
   uri                     = var.upload_lambda_arn
 }
 
-# Method Response for Upload
-resource "aws_api_gateway_method_response" "upload" {
-  rest_api_id = aws_api_gateway_rest_api.main.id
-  resource_id = aws_api_gateway_resource.videos.id
-  http_method = aws_api_gateway_method.upload.http_method
-  status_code = "200"
-}
-
-# Integration Response for Upload
-resource "aws_api_gateway_integration_response" "upload" {
-  rest_api_id = aws_api_gateway_rest_api.main.id
-  resource_id = aws_api_gateway_resource.videos.id
-  http_method = aws_api_gateway_method.upload.http_method
-  status_code = aws_api_gateway_method_response.upload.status_code
-
-  depends_on = [
-    aws_api_gateway_integration.upload
-  ]
-}
-
 # CORS Configuration
 resource "aws_api_gateway_method" "videos_options" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
