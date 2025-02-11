@@ -27,10 +27,87 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
-      - name: Create Lambda Artifacts Bucket if not exists
+      # Create Terraform state bucket if it doesn't exist
+      - name: Create Terraform State Bucket
         run: |
-          aws s3api head-bucket --bucket ${{ env.LAMBDA_BUCKET }} 2>/dev/null || \
-          aws s3 mb s3://${{ env.LAMBDA_BUCKET }}
+          if ! aws s3api head-bucket --bucket ${{ env.TERRAFORM_STATE_BUCKET }} 2>/dev/null; then
+            aws s3api create-bucket \
+              --bucket ${{ env.TERRAFORM_STATE_BUCKET }} \
+              --region ${{ env.REGION_DEFAULT }}
+            
+            # Enable versioning
+            aws s3api put-bucket-versioning \
+              --bucket ${{ env.TERRAFORM_STATE_BUCKET }} \
+              --versioning-configuration Status=Enabled
+
+            # Enable encryption
+            aws s3api put-bucket-encryption \
+              --bucket ${{ env.TERRAFORM_STATE_BUCKET }} \
+              --server-side-encryption-configuration '{
+                "Rules": [
+                  {
+                    "ApplyServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }'
+
+            # Block public access
+            aws s3api put-public-access-block \
+              --bucket ${{ env.TERRAFORM_STATE_BUCKET }} \
+              --public-access-block-configuration '{
+                "BlockPublicAcls": true,
+                "IgnorePublicAcls": true,
+                "BlockPublicPolicy": true,
+                "RestrictPublicBuckets": true
+              }'
+
+            echo "Terraform state bucket created and configured"
+          else
+            echo "Terraform state bucket already exists"
+          fi
+
+      # Create Lambda artifacts bucket if it doesn't exist
+      - name: Create Lambda Artifacts Bucket
+        run: |
+          if ! aws s3api head-bucket --bucket ${{ env.LAMBDA_BUCKET }} 2>/dev/null; then
+            aws s3api create-bucket \
+              --bucket ${{ env.LAMBDA_BUCKET }} \
+              --region ${{ env.REGION_DEFAULT }}
+            
+            # Enable versioning
+            aws s3api put-bucket-versioning \
+              --bucket ${{ env.LAMBDA_BUCKET }} \
+              --versioning-configuration Status=Enabled
+
+            # Enable encryption
+            aws s3api put-bucket-encryption \
+              --bucket ${{ env.LAMBDA_BUCKET }} \
+              --server-side-encryption-configuration '{
+                "Rules": [
+                  {
+                    "ApplyServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }'
+
+            # Block public access
+            aws s3api put-public-access-block \
+              --bucket ${{ env.LAMBDA_BUCKET }} \
+              --public-access-block-configuration '{
+                "BlockPublicAcls": true,
+                "IgnorePublicAcls": true,
+                "BlockPublicPolicy": true,
+                "RestrictPublicBuckets": true
+              }'
+
+            echo "Lambda artifacts bucket created and configured"
+          else
+            echo "Lambda artifacts bucket already exists"
+          fi
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
