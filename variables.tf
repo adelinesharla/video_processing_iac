@@ -7,11 +7,14 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "video-processor"
 }
 
 variable "environment" {
   description = "Environment name"
   type        = string
-  default     = "prod"
+}
+
+variable "lambda_bucket" {
+  description = "S3 bucket containing Lambda artifacts"
+  type        = string
 }
