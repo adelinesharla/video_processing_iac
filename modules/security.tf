@@ -1,7 +1,43 @@
+# Variables
+variable "project_name" {
+  description = "Project name"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "input_bucket_arn" {
+  description = "Input S3 bucket ARN"
+  type        = string
+}
+
+variable "output_bucket_arn" {
+  description = "Output S3 bucket ARN"
+  type        = string
+}
+
+variable "dynamodb_table_arn" {
+  description = "DynamoDB table ARN"
+  type        = string
+}
+
+variable "sqs_queue_arn" {
+  description = "SQS queue ARN"
+  type        = string
+}
+
+variable "sns_topic_arn" {
+  description = "SNS topic ARN"
+  type        = string
+}
+
 # Cognito User Pool
 resource "aws_cognito_user_pool" "main" {
-  name = "${var.project_name}-user-pool"
-
+  name = "${var.project_name}-user-pool-${var.environment}"
+  
   password_policy {
     minimum_length    = 8
     require_lowercase = true
@@ -9,26 +45,29 @@ resource "aws_cognito_user_pool" "main" {
     require_symbols   = true
     require_uppercase = true
   }
-
+  
   auto_verified_attributes = ["email"]
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
 }
 
 resource "aws_cognito_user_pool_client" "main" {
-  name         = "${var.project_name}-client"
+  name         = "${var.project_name}-client-${var.environment}"
   user_pool_id = aws_cognito_user_pool.main.id
-
+  
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
 }
 
-
-
-# IAM Roles and Policies
+# IAM Role for Lambda Functions
 resource "aws_iam_role" "lambda_role" {
-  name = "${var.project_name}-lambda-role"
-
+  name = "${var.project_name}-lambda-role-${var.environment}"
+  
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -41,17 +80,24 @@ resource "aws_iam_role" "lambda_role" {
       }
     ]
   })
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
 }
 
+# Basic Lambda Execution Role
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# Custom Lambda Policy
 resource "aws_iam_role_policy" "lambda_policy" {
-  name = "${var.project_name}-lambda-policy"
+  name = "${var.project_name}-lambda-policy-${var.environment}"
   role = aws_iam_role.lambda_role.id
-
+  
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -63,10 +109,10 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "s3:ListBucket"
         ]
         Resource = [
-          aws_s3_bucket.input.arn,
-          "${aws_s3_bucket.input.arn}/*",
-          aws_s3_bucket.output.arn,
-          "${aws_s3_bucket.output.arn}/*"
+          var.input_bucket_arn,
+          "${var.input_bucket_arn}/*",
+          var.output_bucket_arn,
+          "${var.output_bucket_arn}/*"
         ]
       },
       {
@@ -77,7 +123,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "dynamodb:UpdateItem",
           "dynamodb:Query"
         ]
-        Resource = aws_dynamodb_table.video_processing.arn
+        Resource = var.dynamodb_table_arn
       },
       {
         Effect = "Allow"
@@ -87,14 +133,14 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes"
         ]
-        Resource = aws_sqs_queue.video_processing.arn
+        Resource = var.sqs_queue_arn
       },
       {
         Effect = "Allow"
         Action = [
           "sns:Publish"
         ]
-        Resource = aws_sns_topic.notifications.arn
+        Resource = var.sns_topic_arn
       },
       {
         Effect = "Allow"
@@ -106,4 +152,30 @@ resource "aws_iam_role_policy" "lambda_policy" {
       }
     ]
   })
+}
+
+# Outputs
+output "cognito_user_pool_id" {
+  description = "ID of the Cognito User Pool"
+  value       = aws_cognito_user_pool.main.id
+}
+
+output "cognito_user_pool_arn" {
+  description = "ARN of the Cognito User Pool"
+  value       = aws_cognito_user_pool.main.arn
+}
+
+output "cognito_client_id" {
+  description = "ID of the Cognito User Pool Client"
+  value       = aws_cognito_user_pool_client.main.id
+}
+
+output "lambda_role_arn" {
+  description = "ARN of the Lambda IAM Role"
+  value       = aws_iam_role.lambda_role.arn
+}
+
+output "lambda_role_name" {
+  description = "Name of the Lambda IAM Role"
+  value       = aws_iam_role.lambda_role.name
 }
