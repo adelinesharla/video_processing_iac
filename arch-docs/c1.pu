@@ -1,0 +1,53 @@
+@startuml context
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist
+!include AWSPuml/AWSCommon.puml
+!include AWSPuml/General/Users.puml
+!include AWSPuml/ApplicationIntegration/APIGateway.puml
+!include AWSPuml/SecurityIdentityCompliance/Cognito.puml
+!include AWSPuml/Compute/Lambda.puml
+!include AWSPuml/Storage/SimpleStorageService.puml
+!include AWSPuml/ApplicationIntegration/SimpleQueueService.puml
+!include AWSPuml/Database/DynamoDB.puml
+!include AWSPuml/ApplicationIntegration/SimpleNotificationService.puml
+!include AWSPuml/BusinessApplications/SimpleEmailService.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Video Processing System
+
+Person(user, "User", "Person uploading videos", $sprite="Users")
+System_Ext(frontend, "Web Application", "Interface for users")
+
+System_Boundary(processing_system, "Video Processing System") {
+    System(api, "API Gateway", "REST API Interface", $sprite="APIGateway")
+    System(cognito, "Cognito", "User Authentication", $sprite="Cognito")
+
+    System(upload_lambda, "Upload Handler Lambda", "Handles video uploads", $sprite="Lambda")
+    System(process_lambda, "Video Processor Lambda", "Processes videos into frames", $sprite="Lambda")
+    System(notification_lambda, "Notification Lambda", "Handles notifications", $sprite="Lambda")
+
+    System(s3_input, "Input S3 Bucket", "Stores uploaded videos", $sprite="SimpleStorageService")
+    System(s3_output, "Output S3 Bucket", "Stores processed images", $sprite="SimpleStorageService")
+
+    System(sqs, "SQS Queue", "Message queue for video processing", $sprite="SimpleQueueService")
+    System(dynamodb, "DynamoDB", "Stores processing status", $sprite="DynamoDB")
+    System(sns, "SNS Topic", "Notification system", $sprite="SimpleNotificationService")
+    System(ses, "SES", "Email notifications", $sprite="SimpleEmailService")
+}
+
+Rel(user, frontend, "Uses", "HTTPS")
+Rel(frontend, api, "Calls", "HTTPS")
+Rel(api, cognito, "Authenticates", "JWT")
+Rel(api, upload_lambda, "Triggers", "AWS Event")
+Rel(upload_lambda, s3_input, "Stores video", "S3 API")
+Rel(upload_lambda, sqs, "Enqueues job", "SQS Message")
+Rel(upload_lambda, dynamodb, "Updates status", "DynamoDB API")
+Rel(sqs, process_lambda, "Triggers", "SQS Event")
+Rel(process_lambda, s3_input, "Reads video", "S3 API")
+Rel(process_lambda, s3_output, "Stores images", "S3 API")
+Rel(process_lambda, dynamodb, "Updates status", "DynamoDB API")
+Rel(process_lambda, sns, "Publishes event", "SNS Message")
+Rel(sns, notification_lambda, "Triggers", "SNS Event")
+Rel(notification_lambda, ses, "Sends email", "SES API")
+
+SHOW_LEGEND()
+@enduml
